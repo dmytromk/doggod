@@ -1,15 +1,25 @@
 from pathlib import Path
 from http import HTTPStatus
+from typing import Any
 
 import requests
 
 from src.common.config import RESOURCES_DIR
 
 
+def get(url: str,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, Any] | None = None) -> dict[str, Any]:
+    response = requests.get(url, params=params, headers=headers)
+    if response.status_code == HTTPStatus.OK:
+        return response.json()
+    return response.text
+
+
 def download_image(url: str, filepath: str | bytes):
     response = requests.get(url)
     if response.status_code == HTTPStatus.OK:
-        output_file = Path(f"{RESOURCES_DIR}/{filepath}")
+        output_file = Path(filepath)
         output_file.parent.mkdir(exist_ok=True, parents=True)
         output_file.write_bytes(response.content)
         print("Image downloaded successfully as ", filepath)
