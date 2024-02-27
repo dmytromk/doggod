@@ -25,9 +25,19 @@ def download_all_images() -> None:
     image_folder = RESOURCES_DIR + "/dog-api"
 
     for breed, image_urls in breed_urls.items():
-        for url in image_urls:
-            if breed == "tervuren" or breed == "vizsla" or breed == "waterdog" or breed == "weimaraner" or breed == "whippet" or breed == "wolfhound":
-                download_image(url, f"{image_folder}/{breed}/{uuid.uuid4().hex}.jpg")
+        # Use 60% of the dog-api for training, 20% for the validation and 20% for testing
+        images_amount = len(image_urls)
+        training_proportion = int(images_amount * 0.6)
+        validation_proportion = int(images_amount * 0.8)
+
+        for url in image_urls[:training_proportion]:
+            download_image(url, f"{image_folder}/train/{breed}/{uuid.uuid4().hex}.jpg")
+
+        for url in image_urls[training_proportion:validation_proportion]:
+            download_image(url, f"{image_folder}/validation/{breed}/{uuid.uuid4().hex}.jpg")
+
+        for url in image_urls[validation_proportion:]:
+            download_image(url, f"{image_folder}/test/{breed}/{uuid.uuid4().hex}.jpg")
 
 
 def remove_images_unsupported_format() -> None:
