@@ -16,6 +16,17 @@ def parse_image(filepath: str | bytes):
     return image
 
 
+def train_preprocess(image):
+    image = tf.image.random_flip_left_right(image)
+
+    image = tf.image.random_brightness(image, max_delta=32.0 / 255.0)
+    image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
+
+    image = tf.clip_by_value(image, 0.0, 1.0)
+
+    return image
+
+
 def make_dataset(filepath: str, batch_size: int):
     def configure_for_performance(dataset: DatasetV2) -> DatasetV2:
         dataset = dataset.shuffle(buffer_size=1000)
@@ -31,7 +42,9 @@ def make_dataset(filepath: str, batch_size: int):
 
     filenames_ds = tf.data.Dataset.from_tensor_slices(filenames)
     images_ds = filenames_ds.map(parse_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    images_ds = images_ds.map(train_preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     labels_ds = tf.data.Dataset.from_tensor_slices(labels)
+
     ds = tf.data.Dataset.zip((images_ds, labels_ds))
     ds = configure_for_performance(ds)
 
