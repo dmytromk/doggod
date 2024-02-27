@@ -1,10 +1,8 @@
-from pathlib import Path
 from http import HTTPStatus
+from pathlib import Path
 from typing import Any
 
 import requests
-
-from src.common.config import RESOURCES_DIR
 
 
 def get(url: str,

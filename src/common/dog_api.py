@@ -1,3 +1,4 @@
+import glob
 import imghdr
 import os
 import uuid
@@ -19,6 +20,7 @@ def get_all_breeds_url() -> dict[str, list[str]]:
 
 
 def download_all_images() -> None:
+    # There are nearly 18000 images here, can take it a while
     breed_urls = get_all_breeds_url()
     image_folder = RESOURCES_DIR + "/dog-api"
 
@@ -31,7 +33,7 @@ def download_all_images() -> None:
 def remove_images_unsupported_format() -> None:
     image_folder = RESOURCES_DIR + "/dog-api"
     image_extensions = [".jpg"]  # all present images file extensions
-    img_type_accepted_by_tensorflow = ["bmp", "gif", "jpeg", "png"]
+    img_type_accepted_by_tensorflow = ["jpeg"]
 
     for filepath in Path(image_folder).rglob("*"):
         if filepath.suffix.lower() in image_extensions:

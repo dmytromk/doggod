@@ -1,27 +1,19 @@
 import os
+import random
+from glob import glob
 
 import tensorflow as tf
-from glob import glob
-import random
-
-import matplotlib.pyplot as plt
-
 from tensorflow.python.data.ops.dataset_ops import DatasetV2
 
 from src.common import config
 
 
 def parse_image(filepath: str | bytes):
-    try:
-        image = tf.io.read_file(filepath)
-        image = tf.image.decode_jpeg(image, channels=3)
-        image = tf.image.resize(image, [config.IMG_SIZE, config.IMG_SIZE])
-        image = tf.cast(image, tf.float32) / 255.0
-        return image
-
-    except tf.errors.InvalidArgumentError:
-        #Print a message or handle the error as needed
-        print(f"Skipping file: {filepath}. Unknown image file format.")
+    image = tf.io.read_file(filepath)
+    image = tf.image.decode_jpeg(image, channels=3)
+    image = tf.image.resize(image, [config.IMG_SIZE, config.IMG_SIZE])
+    image = tf.cast(image, tf.float32) / 255.0
+    return image
 
 
 def make_dataset(filepath: str, batch_size: int):
