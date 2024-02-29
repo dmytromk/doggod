@@ -28,7 +28,7 @@ def train_preprocess(image):
 
 
 def configure_for_performance(dataset: DatasetV2, batch_size: int) -> DatasetV2:
-    dataset = dataset.shuffle(buffer_size=1000)
+    dataset = dataset.shuffle(buffer_size=1000, seed=config.SHUFFLE_SEED)
     dataset = dataset.batch(batch_size)
     dataset = dataset.repeat()
     dataset = dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
@@ -38,6 +38,7 @@ def configure_for_performance(dataset: DatasetV2, batch_size: int) -> DatasetV2:
 def make_dataset(filepath: str):
     classes = os.listdir(filepath)
     filenames = glob(filepath + '/*/*')
+    random.seed(config.SHUFFLE_SEED)
     random.shuffle(filenames)
     labels = [classes.index(name.split('/')[-2]) for name in filenames]
 
