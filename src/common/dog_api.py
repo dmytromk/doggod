@@ -1,7 +1,6 @@
 import glob
 import imghdr
 import os
-import uuid
 from pathlib import Path
 
 from src.common.config import RESOURCES_DIR
@@ -30,14 +29,16 @@ def download_all_images() -> None:
         training_proportion = int(images_amount * 0.6)
         validation_proportion = int(images_amount * 0.8)
 
-        for url in image_urls[:training_proportion]:
-            download_image(url, f"{image_folder}/train/{breed}/{uuid.uuid4().hex}.jpg")
+        for i, url in enumerate(image_urls[:training_proportion]):
+            download_image(url, os.path.join(image_folder, "train", breed, f"{breed}_{i}.jpg"))
 
-        for url in image_urls[training_proportion:validation_proportion]:
-            download_image(url, f"{image_folder}/validation/{breed}/{uuid.uuid4().hex}.jpg")
+        for i, url in enumerate(image_urls[training_proportion:validation_proportion],
+                                start=len(image_urls[:training_proportion])):
+            download_image(url, os.path.join(image_folder, "validation", breed, f"{breed}_{i}.jpg"))
 
-        for url in image_urls[validation_proportion:]:
-            download_image(url, f"{image_folder}/test/{breed}/{uuid.uuid4().hex}.jpg")
+        for i, url in enumerate(image_urls[validation_proportion:],
+                                start=len(image_urls[:validation_proportion])):
+            download_image(url, os.path.join(image_folder, "test", breed, f"{breed}_{i}.jpg"))
 
 
 def remove_images_unsupported_format() -> None:
