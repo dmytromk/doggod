@@ -29,7 +29,7 @@ def download_all_images() -> None:
         training_proportion = int(images_amount * 0.6)
         validation_proportion = int(images_amount * 0.8)
 
-        if images_amount < 6:
+        if images_amount < 20:
             continue
 
         for i, url in enumerate(image_urls[:training_proportion]):
