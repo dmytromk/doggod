@@ -35,7 +35,7 @@ def configure_for_performance(dataset: DatasetV2, batch_size: int) -> DatasetV2:
     return dataset
 
 
-def load_dataset(filepath: str, batch_size: int) -> (DatasetV2, int):
+def load_dataset(filepath: str) -> (DatasetV2, int):
     classes = os.listdir(filepath)
     filenames = glob(filepath + '/*/*')
     random.seed(config.SHUFFLE_SEED)
@@ -48,6 +48,5 @@ def load_dataset(filepath: str, batch_size: int) -> (DatasetV2, int):
     labels_ds = tf.data.Dataset.from_tensor_slices(labels)
 
     ds = tf.data.Dataset.zip((images_ds, labels_ds))
-    ds = configure_for_performance(ds, batch_size)
 
     return ds, len(filenames)
