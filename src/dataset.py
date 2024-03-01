@@ -44,7 +44,6 @@ def load_dataset(filepath: str, batch_size: int) -> (DatasetV2, int):
 
     filenames_ds = tf.data.Dataset.from_tensor_slices(filenames)
     images_ds = filenames_ds.map(parse_image, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    images_ds = images_ds.map(train_preprocess, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     labels_ds = tf.data.Dataset.from_tensor_slices(labels)
 
     ds = tf.data.Dataset.zip((images_ds, labels_ds))
