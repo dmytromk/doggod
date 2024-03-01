@@ -1,7 +1,7 @@
 import os
 import tensorflow as tf
 
-from tensorflow.keras import layers, models
+from keras import layers, models
 
 from src.common.config import RESOURCES_DIR, IMG_SIZE, BATCH_SIZE
 from src.dataset import load_dataset, train_preprocess
@@ -16,7 +16,7 @@ def build_model(filter_size, num_classes, img_size):
         layers.MaxPooling2D(pool_size=2, strides=(2, 2)),
         layers.Dropout(0.25),
         layers.Flatten(),
-        layers.Dense(128, activation='relu'),
+        layers.Dense(256, activation='relu'),
         layers.Dropout(0.5),
         layers.Dense(num_classes, activation='softmax')
     ])
@@ -31,9 +31,9 @@ def build_model(filter_size, num_classes, img_size):
 
 
 def build_train_model(filepath, filter_size, img_size, batch_size):
-    train_dataset, train_size = load_dataset(f"{filepath}/train", batch_size)
-    valid_dataset, valid_size = load_dataset(f"{filepath}/validation", batch_size)
-    test_dataset, test_size = load_dataset(f"{filepath}/test", batch_size)
+    train_dataset, train_size = load_dataset(f"{filepath}/train", batch_size, img_size)
+    valid_dataset, valid_size = load_dataset(f"{filepath}/validation", batch_size, img_size)
+    test_dataset, test_size = load_dataset(f"{filepath}/test", batch_size, img_size)
 
     train_dataset = train_dataset.map(lambda image, label: (train_preprocess(image), label),
                                       num_parallel_calls=tf.data.experimental.AUTOTUNE)
@@ -44,7 +44,7 @@ def build_train_model(filepath, filter_size, img_size, batch_size):
     print(f"Number of training images: {train_size}")
     print(f"Number of validation images: {valid_size}")
     print(f"Number of test images: {test_size}")
-    print(f"Number of images: {test_size+valid_size+train_size}")
+    print(f"Number of images: {test_size + valid_size + train_size}")
 
     model = build_model(filter_size, num_classes, img_size)
 
