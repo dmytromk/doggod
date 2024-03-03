@@ -2,19 +2,38 @@ import os
 import tensorflow as tf
 
 from keras import layers, models
+from keras.src.callbacks import ModelCheckpoint
 
 from src.common.config import RESOURCES_DIR, IMG_SIZE, BATCH_SIZE
-from src.dataset import load_dataset, train_preprocess
+from src.dataset import load_dataset
 
 
 def build_model(num_classes, img_size):
     model = models.Sequential([
-        layers.Conv2D(32, 3, activation='relu', padding='same', input_shape=(*img_size, 3)),
-        layers.MaxPooling2D(pool_size=2, strides=(2, 2)),
-        layers.Conv2D(32, 3, activation='relu', padding='same'),
-        layers.MaxPooling2D(pool_size=2, strides=(2, 2)),
-        layers.Flatten(),
-        layers.Dense(512, activation='relu'),
+        layers.BatchNormalization(input_shape=(*img_size, 3)),
+
+        layers.Conv2D(filters=16, kernel_size=3, activation='relu', kernel_initializer='he_normal'),
+        layers.MaxPooling2D(pool_size=2),
+        layers.BatchNormalization(),
+
+        layers.Conv2D(filters=32, kernel_size=3, activation='relu', kernel_initializer='he_normal'),
+        layers.MaxPooling2D(pool_size=2),
+        layers.BatchNormalization(),
+
+        layers.Conv2D(filters=64, kernel_size=3, activation='relu', kernel_initializer='he_normal'),
+        layers.MaxPooling2D(pool_size=2),
+        layers.BatchNormalization(),
+
+        layers.Conv2D(filters=128, kernel_size=3, activation='relu', kernel_initializer='he_normal'),
+        layers.MaxPooling2D(pool_size=2),
+        layers.BatchNormalization(),
+
+        layers.Conv2D(filters=256, kernel_size=3, activation='relu', kernel_initializer='he_normal'),
+        layers.MaxPooling2D(pool_size=2),
+        layers.BatchNormalization(),
+
+        layers.GlobalAveragePooling2D(),
+
         layers.Dense(num_classes, activation='softmax')
     ])
     model.summary()
@@ -37,10 +56,15 @@ def build_train_model(filepath, img_size, batch_size):
 
     model = build_model(len(train_dataset.class_names), img_size)
 
+    checkpointer = ModelCheckpoint(filepath=f"{RESOURCES_DIR}/models/doggod.keras",
+                                   verbose=1, save_best_only=True)
+
+    #model.load_weights(filepath=f"{RESOURCES_DIR}/models/doggod.keras")
     model.fit(train_dataset,
               validation_data=valid_dataset,
               batch_size=batch_size,
-              epochs=10,
+              epochs=20,
+              callbacks=[checkpointer],
               verbose=1
               )
 

@@ -14,10 +14,11 @@ def parse_image(filepath: str | bytes, image_size: tuple[int, int]):
     return image
 
 
-def train_preprocess(image):
-    image = tf.image.random_flip_left_right(image)
-    image = tf.image.random_brightness(image, max_delta=32.0 / 255.0)
-    image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
+def train_preprocess(image, seed):
+    image = tf.image.random_flip_left_right(image, seed=seed)
+    image = tf.image.random_flip_up_down(image, seed=seed)
+    image = tf.image.random_brightness(image, seed=seed, max_delta=32.0 / 255.0)
+    image = tf.image.random_saturation(image, seed=seed, lower=0.5, upper=1.5)
     image = tf.clip_by_value(image, 0.0, 1.0)
     return image
 
@@ -41,7 +42,7 @@ def load_dataset(
     filenames_ds = tf.data.Dataset.from_tensor_slices(image_paths)
     images_ds = filenames_ds.map(lambda x: parse_image(x, image_size), num_parallel_calls=tf.data.AUTOTUNE)
     if preprocess:
-        images_ds = images_ds.map(train_preprocess, num_parallel_calls=tf.data.AUTOTUNE)
+        images_ds = images_ds.map(lambda x: train_preprocess(x, seed), num_parallel_calls=tf.data.AUTOTUNE)
 
     labels_ds = tf.data.Dataset.from_tensor_slices(labels)
     dataset = tf.data.Dataset.zip((images_ds, labels_ds))
