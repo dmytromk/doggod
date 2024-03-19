@@ -6,7 +6,15 @@ import tensorflow as tf
 from tensorflow.python.data.ops.dataset_ops import DatasetV2
 
 
-def parse_image(filepath: str | bytes, image_size: tuple[int, int]):
+def parse_image(filepath: str | bytes, image_size: tuple[int, int]) -> tf.Tensor:
+    """
+    Parse image by given filepath and returns Tensor
+
+    :param filepath: Path to the input file.
+    :param image_size: Resolution to which images are being resized.
+
+    :return: New tensor with provided image.
+    """
     image = tf.io.read_file(filepath)
     image = tf.image.decode_jpeg(image, channels=3)
     image = tf.image.resize(image, image_size)
@@ -14,7 +22,7 @@ def parse_image(filepath: str | bytes, image_size: tuple[int, int]):
     return image
 
 
-def train_preprocess(image, seed):
+def train_preprocess(image: tf.Tensor, seed: int):
     image = tf.image.random_flip_left_right(image, seed=seed)
     image = tf.image.random_flip_up_down(image, seed=seed)
     image = tf.image.random_brightness(image, seed=seed, max_delta=32.0 / 255.0)
