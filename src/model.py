@@ -32,7 +32,7 @@ def build_model_scratch(num_classes, img_size):
 
         layers.GlobalAveragePooling2D(),
 
-        layers.Dense(num_classes, activation='softmax')
+        layers.Dense(num_classes, activation='softmax'),
     ])
     model.summary()
 
@@ -59,6 +59,16 @@ def train_model(filepath, img_size, batch_size, epochs, pretrained_model=None):
     validation_dataset = load_dataset(f"{filepath}/validation", img_size, batch_size, shuffle=False)
     test_dataset = load_dataset(f"{filepath}/test", img_size, batch_size, shuffle=False)
 
+    num_classes = len(train_dataset.class_names)
+    train_size = len(train_dataset.file_paths)
+    validation_size = len(validation_dataset.file_paths)
+    test_size = len(test_dataset.file_paths)
+
+    print(f"Number of breeds: {num_classes}")
+    print(f"Number of training images: {train_size}")
+    print(f"Number of validation images: {validation_size}")
+    print(f"Number of test images: {test_size}")
+
     if pretrained_model:
         model = build_model_pretrained(len(train_dataset.class_names), img_size, pretrained_model)
     else:
@@ -69,7 +79,7 @@ def train_model(filepath, img_size, batch_size, epochs, pretrained_model=None):
                   metrics=['accuracy'])
 
     filename = pretrained_model.__name__ if pretrained_model else 'Scratch'
-    checkpointer = ModelCheckpoint(filepath=f"{RESOURCES_DIR}/weights/Doggod{filename}Weight",
+    checkpointer = ModelCheckpoint(filepath=f"{RESOURCES_DIR}/models/Doggod{filename}",
                                    verbose=1, save_best_only=True)
     early_stopping = EarlyStopping(patience=3)
     model.fit(train_dataset,
@@ -79,7 +89,6 @@ def train_model(filepath, img_size, batch_size, epochs, pretrained_model=None):
               callbacks=[checkpointer, early_stopping],
               verbose=1
               )
-    model.save(filepath=f"{RESOURCES_DIR}/models/Doggod{filename}Model.keras")
 
     test_loss, test_accuracy = model.evaluate(test_dataset)
     print(f"Test loss: {test_loss}")
