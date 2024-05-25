@@ -1,14 +1,12 @@
-import os
-import tensorflow as tf
+from keras import layers, losses, models, optimizers
+from keras.applications import MobileNetV2
+from keras.src.callbacks import ModelCheckpoint, EarlyStopping
 
-from keras import layers, models
-from keras.src.callbacks import ModelCheckpoint
-
-from src.common.config import RESOURCES_DIR, IMG_SIZE, BATCH_SIZE
 from src.dataset import load_dataset
+from src.common.config import RESOURCES_DIR, IMG_SIZE, BATCH_SIZE, SHUFFLE_SEED, EPOCHS
 
 
-def build_model(num_classes, img_size):
+def build_model_scratch(num_classes, img_size):
     model = models.Sequential([
         layers.BatchNormalization(input_shape=(*img_size, 3)),
 
@@ -38,39 +36,55 @@ def build_model(num_classes, img_size):
     ])
     model.summary()
 
-    # Compile the model
-    model.compile(optimizer='adam',
-                  loss='sparse_categorical_crossentropy',
-                  metrics=['accuracy'])
+    return model
+
+
+def build_model_pretrained(num_classes, img_size, pretrained_model):
+    base_model = pretrained_model(input_shape=(*img_size, 3), include_top=False, weights='imagenet')
+    base_model.trainable = False
+
+    model = models.Sequential([
+        base_model,
+        layers.GlobalAveragePooling2D(),
+        layers.Dense(num_classes, activation='softmax')
+    ])
+    model.summary()
 
     return model
 
 
-def build_train_model(filepath, img_size, batch_size):
+def train_model(filepath, img_size, batch_size, epochs, pretrained_model=None):
     train_dataset = load_dataset(f"{filepath}/train", img_size, batch_size,
-                                 seed=132, preprocess=True)
-    valid_dataset = load_dataset(f"{filepath}/validation", img_size, batch_size, shuffle=False)
+                                 seed=SHUFFLE_SEED, preprocess=True)
+    validation_dataset = load_dataset(f"{filepath}/validation", img_size, batch_size, shuffle=False)
     test_dataset = load_dataset(f"{filepath}/test", img_size, batch_size, shuffle=False)
 
-    print(f"Number of breeds: {len(train_dataset.class_names)}")
+    if pretrained_model:
+        model = build_model_pretrained(len(train_dataset.class_names), img_size, pretrained_model)
+    else:
+        model = build_model_scratch(len(train_dataset.class_names), img_size)
 
-    model = build_model(len(train_dataset.class_names), img_size)
+    model.compile(optimizer=optimizers.legacy.Adam(),
+                  loss=losses.SparseCategoricalCrossentropy(),
+                  metrics=['accuracy'])
 
-    checkpointer = ModelCheckpoint(filepath=f"{RESOURCES_DIR}/models/doggod.keras",
+    filename = pretrained_model.__name__ if pretrained_model else 'Scratch'
+    checkpointer = ModelCheckpoint(filepath=f"{RESOURCES_DIR}/weights/Doggod{filename}Weight",
                                    verbose=1, save_best_only=True)
-
-    #model.load_weights(filepath=f"{RESOURCES_DIR}/models/doggod.keras")
+    early_stopping = EarlyStopping(patience=3)
     model.fit(train_dataset,
-              validation_data=valid_dataset,
+              validation_data=validation_dataset,
               batch_size=batch_size,
-              epochs=20,
-              callbacks=[checkpointer],
+              epochs=epochs,
+              callbacks=[checkpointer, early_stopping],
               verbose=1
               )
+    model.save(filepath=f"{RESOURCES_DIR}/models/Doggod{filename}Model.keras")
 
     test_loss, test_accuracy = model.evaluate(test_dataset)
     print(f"Test loss: {test_loss}")
     print(f"Test accuracy: {test_accuracy}")
 
 
-build_train_model(f"{RESOURCES_DIR}/dog-api", (IMG_SIZE, IMG_SIZE), BATCH_SIZE)
+train_model(f"{RESOURCES_DIR}/dog-api", (IMG_SIZE, IMG_SIZE), BATCH_SIZE, 10)
+train_model(f"{RESOURCES_DIR}/dog-api", (IMG_SIZE, IMG_SIZE), BATCH_SIZE, EPOCHS, MobileNetV2)
