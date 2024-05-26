@@ -1,4 +1,3 @@
-import glob
 import imghdr
 import os
 from pathlib import Path

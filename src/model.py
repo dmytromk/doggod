@@ -74,19 +74,18 @@ def train_model(filepath, img_size, batch_size, epochs, pretrained_model=None):
     else:
         model = build_model_scratch(len(train_dataset.class_names), img_size)
 
-    model.compile(optimizer=optimizers.legacy.Adam(),
+    model.compile(optimizer=optimizers.Adam(),
                   loss=losses.SparseCategoricalCrossentropy(),
                   metrics=['accuracy'])
 
     filename = pretrained_model.__name__ if pretrained_model else 'Scratch'
-    checkpointer = ModelCheckpoint(filepath=f"{RESOURCES_DIR}/models/Doggod{filename}",
+    checkpointer = ModelCheckpoint(filepath=f"{RESOURCES_DIR}/models/Doggod{filename}.keras",
                                    verbose=1, save_best_only=True)
-    early_stopping = EarlyStopping(patience=3)
     model.fit(train_dataset,
               validation_data=validation_dataset,
               batch_size=batch_size,
               epochs=epochs,
-              callbacks=[checkpointer, early_stopping],
+              callbacks=[checkpointer],
               verbose=1
               )
 
@@ -95,5 +94,5 @@ def train_model(filepath, img_size, batch_size, epochs, pretrained_model=None):
     print(f"Test accuracy: {test_accuracy}")
 
 
-train_model(f"{RESOURCES_DIR}/dog-api", (IMG_SIZE, IMG_SIZE), BATCH_SIZE, 10)
+train_model(f"{RESOURCES_DIR}/dog-api", (IMG_SIZE, IMG_SIZE), BATCH_SIZE, EPOCHS)
 train_model(f"{RESOURCES_DIR}/dog-api", (IMG_SIZE, IMG_SIZE), BATCH_SIZE, EPOCHS, MobileNetV2)

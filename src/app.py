@@ -1,5 +1,4 @@
 import os
-import random
 import warnings
 
 import keras
@@ -18,23 +17,13 @@ st.set_page_config(
     initial_sidebar_state='auto'
 )
 
-# hide the part of the code, as this is just for adding some custom CSS styling but not a part of the main idea
-hide_streamlit_style = """
-	<style>
-  #MainMenu {visibility: hidden;}
-	footer {visibility: hidden;}
-  </style>
-"""
-st.markdown(hide_streamlit_style,
-            unsafe_allow_html=True)  # hide the CSS code from the screen as they are embedded in markdown text. Also, allow streamlit to unsafely process as HTML
-
 with st.sidebar:
     st.title("Doggod")
     # st.subheader(
     #     "Accurate detection of dog's breed by its image using.")
 
 st.write("""
-         # Accurate detection of dog's breed by its image using
+         # Detection of dog's breed by its image
          """)
 
 file = st.file_uploader("", type=["jpg", "png"])
@@ -57,14 +46,11 @@ else:
     st.image(image, use_column_width=True)
     image_preprocessed = import_image(image)
 
-    scratch_model = keras.models.load_model(f"{RESOURCES_DIR}/models/DoggodScratch")
-    mobilenetv2_model = keras.models.load_model(f"{RESOURCES_DIR}/models/DoggodMobileNetV2")
+    scratch_model = keras.models.load_model(f"{RESOURCES_DIR}/models/DoggodScratch.keras")
+    mobilenetv2_model = keras.models.load_model(f"{RESOURCES_DIR}/models/DoggodMobileNetV2.keras")
 
     scratch_result = classes[np.argmax(scratch_model.predict(image_preprocessed))]
     mobilenetv2_result = classes[np.argmax(mobilenetv2_model.predict(image_preprocessed))]
-
-    # x = random.randint(98, 99) + random.randint(0, 99) * 0.01
-    # st.sidebar.error("Accuracy : " + str(x) + " %")
 
     st.markdown("Scratch Model")
     st.info(scratch_result)
