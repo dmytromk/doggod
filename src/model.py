@@ -8,27 +8,14 @@ from src.common.config import RESOURCES_DIR, IMG_SIZE, BATCH_SIZE, SHUFFLE_SEED,
 
 def build_model_scratch(num_classes, img_size):
     model = models.Sequential([
-        layers.BatchNormalization(input_shape=(*img_size, 3)),
-
-        layers.Conv2D(filters=16, kernel_size=3, activation='relu', kernel_initializer='he_normal'),
+        layers.Conv2D(filters=16, kernel_size=3, activation='relu', kernel_initializer='he_normal', input_shape=(*img_size, 3)),
         layers.MaxPooling2D(pool_size=2),
-        layers.BatchNormalization(),
 
         layers.Conv2D(filters=32, kernel_size=3, activation='relu', kernel_initializer='he_normal'),
         layers.MaxPooling2D(pool_size=2),
-        layers.BatchNormalization(),
 
         layers.Conv2D(filters=64, kernel_size=3, activation='relu', kernel_initializer='he_normal'),
         layers.MaxPooling2D(pool_size=2),
-        layers.BatchNormalization(),
-
-        layers.Conv2D(filters=128, kernel_size=3, activation='relu', kernel_initializer='he_normal'),
-        layers.MaxPooling2D(pool_size=2),
-        layers.BatchNormalization(),
-
-        layers.Conv2D(filters=256, kernel_size=3, activation='relu', kernel_initializer='he_normal'),
-        layers.MaxPooling2D(pool_size=2),
-        layers.BatchNormalization(),
 
         layers.GlobalAveragePooling2D(),
 

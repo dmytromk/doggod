@@ -10,11 +10,10 @@ from common.config import IMG_SIZE, RESOURCES_DIR
 
 warnings.filterwarnings("ignore")
 
-# set some pre-defined configurations for the page, such as the page title, logo-icon, page loading state (whether the page is loaded automatically or you need to perform some action for loading)
 st.set_page_config(
     page_title="Doggod",
     page_icon=":dog:",
-    initial_sidebar_state='auto'
+    initial_sidebar_state='collapsed'
 )
 
 with st.sidebar:
